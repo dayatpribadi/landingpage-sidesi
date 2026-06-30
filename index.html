@@ -836,56 +836,12 @@
     </div>
 
     <!-- ========== JAVASCRIPT ========== -->
+    <script src="assets/js/news-data.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
             // ===== DATA KABUPATEN OGAN ILIR =====
-            const newsData = [{
-                    id: 1,
-                    category: 'pembangunan',
-                    title: 'Pembangunan Jalan Usaha Tani Desa Tanjung Batu Rampung',
-                    excerpt: 'Proyek pembangunan jalan usaha tani sepanjang 1,5 km di Desa Tanjung Batu telah selesai, memudahkan akses petani ke areal persawahan.',
-                    date: '15 Jun 2025',
-                    desa: 'Desa Tanjung Batu',
-                    img: 'https://picsum.photos/seed/jalan-oganilir/600/400'
-                },
-                {
-                    id: 2,
-                    category: 'pelayanan',
-                    title: 'Desa Indralaya Raih 300 Surat TTE dalam Sebulan',
-                    excerpt: 'Desa Indralaya sebagai ibukota kecamatan mencatatkan pencapaian luar biasa dengan lebih dari 300 surat digital diproses bulan ini.',
-                    date: '14 Jun 2025',
-                    desa: 'Desa Indralaya',
-                    img: 'https://picsum.photos/seed/surat-oi/600/400'
-                },
-                {
-                    id: 3,
-                    category: 'kegiatan',
-                    title: 'Festival Budaya Ogan Ilir Digelar di Desa Kandis',
-                    excerpt: 'Puluhan seniman lokal tampil dalam Festival Budaya Ogan Ilir yang diselenggarakan di Desa Kandis, menampilkan seni tari dan musik tradisional.',
-                    date: '13 Jun 2025',
-                    desa: 'Desa Kandis',
-                    img: 'https://picsum.photos/seed/festival-oi/600/400'
-                },
-                {
-                    id: 4,
-                    category: 'pembangunan',
-                    title: 'Posyandu Baru di Desa Sungai Pinang Resmi Dioperasikan',
-                    excerpt: 'Gedung Posyandu baru yang dibangun dengan Dana Desa di Desa Sungai Pinang kini melayani masyarakat dengan fasilitas kesehatan lengkap.',
-                    date: '12 Jun 2025',
-                    desa: 'Desa Sungai Pinang',
-                    img: 'https://picsum.photos/seed/posyandu-oi/600/400'
-                },
-                {
-                    id: 5,
-                    category: 'pelayanan',
-                    title: 'Sosialisasi TTE untuk Perangkat Desa Se-Kecamatan Pemulutan',
-                    excerpt: 'Kecamatan Pemulutan mengadakan pelatihan Tanda Tangan Elektronik bagi seluruh perangkat desa untuk meningkatkan efisiensi pelayanan publik.',
-                    date: '11 Jun 2025',
-                    desa: 'Desa Pemulutan',
-                    img: 'https://picsum.photos/seed/tte-oi/600/400'
-                }
-            ];
+            const newsData = window.newsData || [];
 
             const topSurat = [{
                     rank: 1,
@@ -1211,10 +1167,10 @@
                         </div>
                         <h3 class="font-bold text-sm leading-snug text-neutral-900 group-hover:text-brand-600 transition-colors line-clamp-2">${news.title}</h3>
                         <p class="text-xs text-neutral-500 mt-2 leading-relaxed line-clamp-2">${news.excerpt}</p>
-                        <button class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-500 hover:text-brand-700 transition-colors group/btn">
+                        <a href="detail-berita.html?id=${news.id}" class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-500 hover:text-brand-700 transition-colors group/btn">
                             Baca selengkapnya
                             <span class="iconify group-hover/btn:translate-x-1 transition-transform" data-icon="mdi:arrow-right"></span>
-                        </button>
+                        </a>
                     </div>
                 </article>
             `).join('');
