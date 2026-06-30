@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIDESI — Sistem Informasi Desa Terintegrasi Kab. Ogan Ilir</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fdf2f8',
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f9a8d4',
+                            400: '#f472b6',
+                            500: '#ec4899',
+                            600: '#db2777',
+                            700: '#be185d',
+                            800: '#9d174d',
+                            900: '#831843'
+                        },
+                        sky: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7'
+                        },
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a'
+                        },
+                        dark: {
+                            800: '#1e1e1e',
+                            900: '#111111',
+                            950: '#0a0a0a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ec4899;
+            border-radius: 3px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shimmer {
+            from {
+                background-position: 200% 0;
+            }
+
+            to {
+                background-position: -200% 0;
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-400 {
+            animation-delay: 0.4s;
+        }
+
+        .delay-500 {
+            animation-delay: 0.5s;
+        }
+
+        .delay-600 {
+            animation-delay: 0.6s;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1e1e1e 40%, #111111 100%);
+        }
+
+        .hero-banner {
+            background:
+                linear-gradient(112deg, rgba(6, 10, 18, 0.82) 6%, rgba(10, 18, 31, 0.54) 42%, rgba(10, 13, 20, 0.68) 100%),
+                url('assets/img/background/danau.jpeg') center center / cover no-repeat;
+        }
+
+        .hero-glow {
+            background:
+                radial-gradient(circle at 72% 22%, rgba(236, 72, 153, 0.18) 0%, transparent 32%),
+                radial-gradient(circle at 20% 78%, rgba(56, 189, 248, 0.16) 0%, transparent 28%),
+                linear-gradient(180deg, rgba(7, 11, 19, 0.12) 0%, rgba(7, 11, 19, 0.42) 100%);
+        }
+
+        .grid-pattern {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .hero-vignette {
+            background:
+                linear-gradient(90deg, rgba(6, 10, 18, 0.8) 0%, rgba(6, 10, 18, 0.42) 44%, rgba(6, 10, 18, 0.7) 100%),
+                linear-gradient(180deg, rgba(6, 10, 18, 0.12) 0%, rgba(6, 10, 18, 0.18) 100%);
+        }
+
+        @media (max-width: 768px) {
+            .hero-banner {
+                background-position: 60% center;
+            }
+
+            .hero-vignette {
+                background: linear-gradient(180deg, rgba(6, 10, 18, 0.84) 0%, rgba(6, 10, 18, 0.58) 40%, rgba(6, 10, 18, 0.82) 100%);
+            }
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .news-img-wrap {
+            overflow: hidden;
+        }
+
+        .news-img-wrap img {
+            transition: transform 0.6s ease;
+        }
+
+        .news-img-wrap:hover img {
+            transform: scale(1.08);
+        }
+
+        .custom-marker {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            border: 3px solid #fff;
+            box-shadow: 0 2px 12px rgba(236, 72, 153, 0.5);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .custom-marker:hover {
+            transform: scale(1.3);
+        }
+
+        .custom-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(236, 72, 153, 0.35);
+            transform: translate(-50%, -50%);
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        .custom-marker.inactive {
+            background: #d1d5db;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .custom-marker.inactive::after {
+            display: none;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 16px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12) !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            min-width: 240px;
+        }
+
+        .leaflet-popup-tip {
+            display: none;
+        }
+
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.35);
+        }
+
+        .kec-chip {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .kec-chip.active {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: #fff;
+            border-color: #ec4899;
+        }
+
+        .stat-shimmer {
+            background: linear-gradient(90deg, transparent 0%, rgba(236, 72, 153, 0.04) 50%, transparent 100%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            background: #1e1e1e;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(120%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .status-online {
+            position: relative;
+        }
+
+        .status-online::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #e5e5e5 50%, transparent 100%);
+        }
+
+        /* Gradient text utility */
+        .text-gradient-pink {
+            background: linear-gradient(135deg, #f472b6, #ec4899, #db2777);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .text-gradient-blue {
+            background: linear-gradient(135deg, #7dd3fc, #38bdf8, #0ea5e9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .text-gradient-green {
+            background: linear-gradient(135deg, #86efac, #4ade80, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-neutral-900 antialiased">
+
+    <!-- ========== NAVBAR ========== -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="flex items-center justify-between h-20">
+                <a href="#" class="flex items-center gap-3 group">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-110 transition-transform duration-300">
+                        <span class="iconify text-white text-xl" data-icon="mdi:shield-home"></span>
+                    </div>
+                    <div>
+                        <span class="text-lg font-bold tracking-tight nav-text-color">SIDESI</span>
+                        <span class="block text-[10px] font-medium tracking-widest uppercase nav-sub-color -mt-0.5">Kab.
+                            Ogan Ilir</span>
+                    </div>
+                </a>
+                <div class="hidden lg:flex items-center gap-8">
+                    <a href="#berita"
+                        class="text-sm font-medium nav-link-color hover:text-brand-500 transition-colors">Berita</a>
+                    <a href="#statistik"
+                        class="text-sm font-medium nav-link-color hover:text-brand-500 transition-colors">Statistik</a>
+                    <a href="#peta"
+                        class="text-sm font-medium nav-link-color hover:text-brand-500 transition-colors">Peta Desa</a>
+                    <a href="#website"
+                        class="text-sm font-medium nav-link-color hover:text-brand-500 transition-colors">Website
+                        Desa</a>
+                    <a href="login.html"
+                        class="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-brand-500/25">
+                        <span class="iconify text-base" data-icon="mdi:login"></span>
+                        Masuk Akun Desa
+                    </a>
+                </div>
+                <button id="mobileToggle"
+                    class="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center nav-link-color hover:bg-neutral-100 transition-colors">
+                    <span class="iconify text-2xl" data-icon="mdi:menu" id="menuIcon"></span>
+                </button>
+            </div>
+        </div>
+        <div id="mobileMenu"
+            class="lg:hidden hidden bg-white/95 backdrop-blur-xl border-t border-neutral-100 shadow-xl">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-1">
+                <a href="#berita"
+                    class="mobile-link py-3 px-4 rounded-xl text-sm font-medium text-neutral-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">Berita
+                    Desa</a>
+                <a href="#statistik"
+                    class="mobile-link py-3 px-4 rounded-xl text-sm font-medium text-neutral-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">Statistik</a>
+                <a href="#peta"
+                    class="mobile-link py-3 px-4 rounded-xl text-sm font-medium text-neutral-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">Peta
+                    Desa</a>
+                <a href="#website"
+                    class="mobile-link py-3 px-4 rounded-xl text-sm font-medium text-neutral-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">Website
+                    Desa</a>
+                <a href="login.html"
+                    class="mobile-link py-3 px-4 rounded-xl text-sm font-medium text-neutral-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">Masuk
+                    Akun Desa</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== HERO ========== -->
+    <section class="hero-banner relative min-h-[90vh] flex items-center overflow-hidden">
+        <div class="hero-vignette absolute inset-0"></div>
+        <div class="hero-glow absolute inset-0"></div>
+        <div class="grid-pattern absolute inset-0"></div>
+        <div class="absolute top-32 right-20 w-72 h-72 bg-brand-500/8 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-20 left-10 w-56 h-56 bg-sky-400/6 rounded-full blur-2xl animate-float"
+            style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/3 w-40 h-40 bg-mint-400/5 rounded-full blur-2xl animate-float"
+            style="animation-delay: 4s;"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-32 w-full">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-7">
+                    <div class="animate-fade-in-up">
+                        <span
+                            class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/10 text-brand-300 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
+                            <span class="w-2 h-2 bg-brand-400 rounded-full animate-pulse"></span>
+                            Kabupaten Ogan Ilir — Sumatera Selatan
+                        </span>
+                    </div>
+                    <h1
+                        class="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-[0.95] tracking-tight animate-fade-in-up delay-100">
+                        Sistem Informasi
+                        <span class="block mt-2 text-gradient-pink">Desa Terintegrasi</span>
+                    </h1>
+                    <p class="mt-6 text-lg text-neutral-200 max-w-xl leading-relaxed animate-fade-in-up delay-200">
+                        Memperkuat tata kelola desa di Kabupaten Ogan Ilir melalui layanan surat digital, absensi
+                        pegawai, dan informasi desa yang terintegrasi.
+                    </p>
+                    <div class="mt-10 flex flex-wrap gap-4 animate-fade-in-up delay-300">
+                        <a href="#peta"
+                            class="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-brand-500/25 hover:-translate-y-1">
+                            <span class="iconify text-xl" data-icon="mdi:map-search"></span>
+                            Lihat Peta Desa
+                        </a>
+                        <a href="#berita"
+                            class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/10 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1">
+                            <span class="iconify text-xl" data-icon="mdi:newspaper-variant-outline"></span>
+                            Berita Terkini
+                        </a>
+                    </div>
+                </div>
+                <div class="lg:col-span-5 hidden lg:flex justify-center animate-fade-in-up delay-400">
+                    <div class="relative">
+                        <div
+                            class="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 w-80 animate-float">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 rounded-xl bg-sky-400/20 flex items-center justify-center">
+                                    <span class="iconify text-sky-400 text-xl"
+                                        data-icon="mdi:file-document-check"></span>
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold text-sm">Surat Digital TTE</p>
+                                    <p class="text-neutral-300/80 text-xs">Bulan ini</p>
+                                </div>
+                            </div>
+                            <p class="text-4xl font-bold text-white counter" data-target="1247">0</p>
+                            <p class="text-sky-400 text-xs font-semibold mt-1 flex items-center gap-1">
+                                <span class="iconify" data-icon="mdi:trending-up"></span> +23% dari bulan lalu
+                            </p>
+                        </div>
+                        <div class="absolute -bottom-8 -left-16 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 w-52 animate-float"
+                            style="animation-delay: 1.5s;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-mint-400/20 flex items-center justify-center">
+                                    <span class="iconify text-mint-400 text-lg" data-icon="mdi:account-check"></span>
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold text-sm">Absensi Hari Ini</p>
+                                    <p class="text-mint-400 text-xs font-bold">324 pegawai</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute -top-4 -right-12 bg-gradient-to-br from-brand-400 to-brand-600 rounded-2xl p-3 w-36 shadow-xl shadow-brand-500/25 animate-float"
+                            style="animation-delay: 3s;">
+                            <p class="text-white/70 text-[10px] font-semibold uppercase tracking-wider">Desa Terdaftar
+                            </p>
+                            <p class="text-2xl font-bold text-white counter" data-target="18">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div
+            class="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/75 animate-bounce">
+            <span class="text-xs font-medium tracking-wider uppercase">Scroll</span>
+            <span class="iconify text-lg" data-icon="mdi:chevron-down"></span>
+        </div>
+    </section>
+
+    <!-- ========== STATS OVERVIEW ========== -->
+    <section class="relative z-20 -mt-12 lg:-mt-12">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <div
+                    class="reveal bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/70 shadow-xl shadow-neutral-900/10 stat-shimmer">
+                    <div class="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center mb-3">
+                        <span class="iconify text-brand-500 text-2xl" data-icon="mdi:home-group"></span>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral-900 counter" data-target="18">0</p>
+                    <p class="text-sm text-neutral-500 mt-1">Desa Terdaftar</p>
+                </div>
+                <div class="reveal delay-100 bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/70 shadow-xl shadow-neutral-900/10 stat-shimmer"
+                    style="animation-delay: 0.1s;">
+                    <div class="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center mb-3">
+                        <span class="iconify text-sky-500 text-2xl" data-icon="mdi:file-sign"></span>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral-900 counter" data-target="1247">0</p>
+                    <p class="text-sm text-neutral-500 mt-1">Surat TTE Bulan Ini</p>
+                </div>
+                <div
+                    class="reveal delay-200 bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/70 shadow-xl shadow-neutral-900/10">
+                    <div class="w-11 h-11 rounded-xl bg-mint-50 flex items-center justify-center mb-3">
+                        <span class="iconify text-mint-500 text-2xl" data-icon="mdi:account-check-outline"></span>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral-900 counter" data-target="324">0</p>
+                    <p class="text-sm text-neutral-500 mt-1">Absensi Hari Ini</p>
+                </div>
+                <div
+                    class="reveal delay-300 bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/70 shadow-xl shadow-neutral-900/10">
+                    <div class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center mb-3">
+                        <span class="iconify text-purple-500 text-2xl" data-icon="mdi:web"></span>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral-900 counter" data-target="18">0</p>
+                    <p class="text-sm text-neutral-500 mt-1">Website Desa Aktif</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== BERITA DESA ========== -->
+    <section id="berita" class="pt-32 pb-24 bg-neutral-50 lg:pt-40">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="reveal flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
+                <div>
+                    <span
+                        class="inline-flex items-center gap-2 text-brand-500 text-xs font-semibold uppercase tracking-widest mb-3">
+                        <span class="w-6 h-[2px] bg-brand-500 rounded"></span> Berita Desa
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Informasi Terbaru</h2>
+                    <p class="text-neutral-500 mt-2 max-w-md">Berita dan pengumuman terkini dari desa-desa di Kabupaten
+                        Ogan Ilir.</p>
+                </div>
+                <div class="flex flex-wrap gap-2" id="newsTabs">
+                    <button
+                        class="tab-btn active text-xs font-semibold px-4 py-2 rounded-full border border-neutral-200"
+                        data-category="semua">Semua</button>
+                    <button
+                        class="tab-btn text-xs font-semibold px-4 py-2 rounded-full border border-neutral-200 text-neutral-600 hover:border-brand-300"
+                        data-category="pembangunan">Pembangunan</button>
+                    <button
+                        class="tab-btn text-xs font-semibold px-4 py-2 rounded-full border border-neutral-200 text-neutral-600 hover:border-brand-300"
+                        data-category="pelayanan">Pelayanan</button>
+                    <button
+                        class="tab-btn text-xs font-semibold px-4 py-2 rounded-full border border-neutral-200 text-neutral-600 hover:border-brand-300"
+                        data-category="kegiatan">Kegiatan</button>
+                </div>
+            </div>
+            <div id="newsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+    </section>
+
+    <!-- ========== DESA TERAKTIF ========== -->
+    <section id="statistik" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="reveal text-center mb-16">
+                <span
+                    class="inline-flex items-center gap-2 text-brand-500 text-xs font-semibold uppercase tracking-widest mb-3">
+                    <span class="w-6 h-[2px] bg-brand-500 rounded"></span> Statistik Bulan Ini
+                    <span class="w-6 h-[2px] bg-brand-500 rounded"></span>
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Desa Teraktif</h2>
+                <p class="text-neutral-500 mt-2 max-w-lg mx-auto">Desa dengan performa tertinggi dalam pemanfaatan
+                    layanan digital Sidesi di Kab. Ogan Ilir.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="reveal">
+                    <div
+                        class="bg-gradient-to-br from-sky-50 to-sky-100/50 rounded-3xl p-8 border border-sky-100 h-full">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/25">
+                                <span class="iconify text-white text-2xl"
+                                    data-icon="mdi:file-document-check-outline"></span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">Surat Digital Desa</h3>
+                                <p class="text-sm text-neutral-500">Jumlah surat yang di-TTE bulan ini</p>
+                            </div>
+                        </div>
+                        <div id="suratRanking" class="space-y-4"></div>
+                    </div>
+                </div>
+                <div class="reveal delay-200">
+                    <div
+                        class="bg-gradient-to-br from-mint-50 to-mint-100/50 rounded-3xl p-8 border border-mint-100 h-full">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-mint-400 to-mint-600 flex items-center justify-center shadow-lg shadow-mint-500/25">
+                                <span class="iconify text-white text-2xl" data-icon="mdi:fingerprint"></span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">Absensi Pegawai</h3>
+                                <p class="text-sm text-neutral-500">Jumlah pegawai absensi hari ini</p>
+                            </div>
+                        </div>
+                        <div id="absensiRanking" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider max-w-7xl mx-auto"></div>
+
+    <!-- ========== PETA SEBARAN DESA ========== -->
+    <section id="peta" class="py-24 bg-neutral-50">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="reveal text-center mb-12">
+                <span
+                    class="inline-flex items-center gap-2 text-brand-500 text-xs font-semibold uppercase tracking-widest mb-3">
+                    <span class="w-6 h-[2px] bg-brand-500 rounded"></span> Peta Interaktif
+                    <span class="w-6 h-[2px] bg-brand-500 rounded"></span>
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Sebaran Desa Ogan Ilir</h2>
+                <p class="text-neutral-500 mt-2 max-w-lg mx-auto">Lokasi dan informasi seluruh desa yang terdaftar di
+                    platform Sidesi Kabupaten Ogan Ilir.</p>
+            </div>
+            <div class="reveal flex flex-wrap justify-center gap-2 mb-8" id="kecFilter">
+                <button
+                    class="kec-chip active text-xs font-semibold px-4 py-2 rounded-full border border-neutral-200 bg-white"
+                    data-kec="semua">Semua Kecamatan</button>
+            </div>
+            <div
+                class="reveal bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-xl shadow-neutral-200/50">
+                <div id="map" style="height: 520px; width: 100%;"></div>
+            </div>
+            <!-- <div class="reveal flex flex-wrap items-center justify-center gap-6 mt-6 text-sm text-neutral-500">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-4 h-4 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 shadow-sm shadow-brand-500/40">
+                    </div>
+                    <span>Desa Aktif</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded-full bg-neutral-300"></div>
+                    <span>Desa Lainnya</span>
+                </div>
+                <div class="flex items-center gap-2 text-neutral-400">
+                    <span class="iconify" data-icon="mdi:information-outline"></span>
+                    <span>Klik marker untuk detail desa</span>
+                </div>
+            </div> -->
+        </div>
+    </section>
+
+    <!-- ========== WEBSITE DESA ========== -->
+    <section id="website" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="reveal flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
+                <div>
+                    <span
+                        class="inline-flex items-center gap-2 text-brand-500 text-xs font-semibold uppercase tracking-widest mb-3">
+                        <span class="w-6 h-[2px] bg-brand-500 rounded"></span> Portal Desa
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Website Desa</h2>
+                    <p class="text-neutral-500 mt-2 max-w-md">Akses langsung ke website resmi setiap desa di Kabupaten
+                        Ogan Ilir.</p>
+                </div>
+                <div class="relative">
+                    <span class="iconify absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg"
+                        data-icon="mdi:magnify"></span>
+                    <input type="text" id="websiteSearch" placeholder="Cari nama desa atau kecamatan..."
+                        class="pl-11 pr-5 py-3 w-full sm:w-80 text-sm rounded-xl border border-neutral-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none transition-all bg-neutral-50 focus:bg-white">
+                </div>
+            </div>
+            <div id="websiteGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+            <p id="noResult" class="hidden text-center text-neutral-400 py-12 text-sm">Tidak ada desa yang sesuai dengan
+                pencarian.</p>
+        </div>
+    </section>
+
+    <!-- ========== CTA ========== -->
+    <section class="py-24 hero-gradient relative overflow-hidden">
+        <div class="hero-glow absolute inset-0"></div>
+        <div class="grid-pattern absolute inset-0"></div>
+        <div class="relative z-10 max-w-3xl mx-auto px-6 text-center reveal">
+            <div class="w-16 h-16 rounded-2xl bg-brand-500/15 flex items-center justify-center mx-auto mb-6">
+                <span class="iconify text-brand-400 text-3xl" data-icon="mdi:rocket-launch-outline"></span>
+            </div>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Wujudkan Desa Digital <br> Modern dan
+                Terintegrasi</h2>
+            <p class="text-neutral-400 mt-4 text-lg leading-relaxed">Transformasi layanan desa menjadi lebih modern
+                dengan SIDESI. Kelola administrasi, pelayanan masyarakat, surat-menyurat, dan berbagai kebutuhan desa
+                secara mudah, cepat, aman, dan terintegrasi dalam satu platform.</p>
+            <div class="mt-10 flex flex-wrap justify-center gap-4">
+                <a href="login.html"
+                    class="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-brand-500/25 hover:-translate-y-1">
+                    <span class="iconify text-xl" data-icon="mdi:account-plus-outline"></span>
+                    Kelola Desa
+                </a>
+                <a href="#"
+                    class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/10 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1">
+                    <span class="iconify text-xl" data-icon="mdi:information-outline"></span>
+                    Pelajari Lebih Lanjut
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="bg-dark-950 text-neutral-400 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
+                <div class="lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
+                            <span class="iconify text-white text-xl" data-icon="mdi:shield-home"></span>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold text-white tracking-tight">SIDESI</span>
+                            <span
+                                class="block text-[10px] font-medium tracking-widest uppercase text-neutral-500 -mt-0.5">Kab.
+                                Ogan Ilir</span>
+                        </div>
+                    </div>
+                    <p class="text-sm leading-relaxed">Sistem Informasi Desa digital untuk memperkuat tata kelola
+                        pemerintahan desa di Kabupaten Ogan Ilir, Sumatera Selatan.</p>
+                    <div class="flex gap-3 mt-5">
+                        <a href="#"
+                            class="w-9 h-9 rounded-lg bg-white/5 hover:bg-brand-500 flex items-center justify-center transition-colors">
+                            <span class="iconify text-base" data-icon="mdi:facebook"></span>
+                        </a>
+                        <a href="#"
+                            class="w-9 h-9 rounded-lg bg-white/5 hover:bg-brand-500 flex items-center justify-center transition-colors">
+                            <span class="iconify text-base" data-icon="mdi:instagram"></span>
+                        </a>
+                        <a href="#"
+                            class="w-9 h-9 rounded-lg bg-white/5 hover:bg-brand-500 flex items-center justify-center transition-colors">
+                            <span class="iconify text-base" data-icon="mdi:youtube"></span>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm mb-4">Layanan</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="#" class="hover:text-brand-400 transition-colors">Surat Digital</a></li>
+                        <li><a href="#" class="hover:text-brand-400 transition-colors">Absensi Pegawai</a></li>
+                        <li><a href="#" class="hover:text-brand-400 transition-colors">Pengaduan Desa</a></li>
+                        <li><a href="#" class="hover:text-brand-400 transition-colors">Transparansi Dana</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm mb-4">Informasi</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="#berita" class="hover:text-brand-400 transition-colors">Berita Desa</a></li>
+                        <li><a href="#peta" class="hover:text-brand-400 transition-colors">Peta Sebaran</a></li>
+                        <li><a href="#website" class="hover:text-brand-400 transition-colors">Website Desa</a></li>
+                        <li><a href="#statistik" class="hover:text-brand-400 transition-colors">Statistik</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm mb-4">Kontak</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li class="flex items-start gap-2"><span class="iconify mt-0.5 text-brand-400"
+                                data-icon="mdi:map-marker"></span>Jl. Raya Indralaya, Kab. Ogan Ilir, Sumatera Selatan
+                        </li>
+                        <li class="flex items-center gap-2"><span class="iconify text-brand-400"
+                                data-icon="mdi:email-outline"></span>info@sidesi.oganilirkab.go.id</li>
+                        <li class="flex items-center gap-2"><span class="iconify text-brand-400"
+                                data-icon="mdi:phone-outline"></span>(0711) 123456</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-600">
+                <p>&copy; 2025 Sidesi — Sistem Informasi Desa Kab. Ogan Ilir. Hak cipta dilindungi.</p>
+                <p>Dibuat dengan <span class="text-brand-500">♥</span> untuk Ogan Ilir</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <span class="iconify text-brand-400 text-lg" data-icon="mdi:check-circle"></span>
+        <span id="toastMsg">Pesan</span>
+    </div>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // ===== DATA KABUPATEN OGAN ILIR =====
+            const newsData = [{
+                    id: 1,
+                    category: 'pembangunan',
+                    title: 'Pembangunan Jalan Usaha Tani Desa Tanjung Batu Rampung',
+                    excerpt: 'Proyek pembangunan jalan usaha tani sepanjang 1,5 km di Desa Tanjung Batu telah selesai, memudahkan akses petani ke areal persawahan.',
+                    date: '15 Jun 2025',
+                    desa: 'Desa Tanjung Batu',
+                    img: 'https://picsum.photos/seed/jalan-oganilir/600/400'
+                },
+                {
+                    id: 2,
+                    category: 'pelayanan',
+                    title: 'Desa Indralaya Raih 300 Surat TTE dalam Sebulan',
+                    excerpt: 'Desa Indralaya sebagai ibukota kecamatan mencatatkan pencapaian luar biasa dengan lebih dari 300 surat digital diproses bulan ini.',
+                    date: '14 Jun 2025',
+                    desa: 'Desa Indralaya',
+                    img: 'https://picsum.photos/seed/surat-oi/600/400'
+                },
+                {
+                    id: 3,
+                    category: 'kegiatan',
+                    title: 'Festival Budaya Ogan Ilir Digelar di Desa Kandis',
+                    excerpt: 'Puluhan seniman lokal tampil dalam Festival Budaya Ogan Ilir yang diselenggarakan di Desa Kandis, menampilkan seni tari dan musik tradisional.',
+                    date: '13 Jun 2025',
+                    desa: 'Desa Kandis',
+                    img: 'https://picsum.photos/seed/festival-oi/600/400'
+                },
+                {
+                    id: 4,
+                    category: 'pembangunan',
+                    title: 'Posyandu Baru di Desa Sungai Pinang Resmi Dioperasikan',
+                    excerpt: 'Gedung Posyandu baru yang dibangun dengan Dana Desa di Desa Sungai Pinang kini melayani masyarakat dengan fasilitas kesehatan lengkap.',
+                    date: '12 Jun 2025',
+                    desa: 'Desa Sungai Pinang',
+                    img: 'https://picsum.photos/seed/posyandu-oi/600/400'
+                },
+                {
+                    id: 5,
+                    category: 'pelayanan',
+                    title: 'Sosialisasi TTE untuk Perangkat Desa Se-Kecamatan Pemulutan',
+                    excerpt: 'Kecamatan Pemulutan mengadakan pelatihan Tanda Tangan Elektronik bagi seluruh perangkat desa untuk meningkatkan efisiensi pelayanan publik.',
+                    date: '11 Jun 2025',
+                    desa: 'Desa Pemulutan',
+                    img: 'https://picsum.photos/seed/tte-oi/600/400'
+                }
+            ];
+
+            const topSurat = [{
+                    rank: 1,
+                    desa: 'Desa Indralaya',
+                    kec: 'Kec. Indralaya',
+                    jumlah: 347
+                },
+                {
+                    rank: 2,
+                    desa: 'Desa Tanjung Batu',
+                    kec: 'Kec. Tanjung Batu',
+                    jumlah: 298
+                },
+                {
+                    rank: 3,
+                    desa: 'Desa Kandis',
+                    kec: 'Kec. Kandis',
+                    jumlah: 256
+                }
+            ];
+
+            const topAbsensi = [{
+                    rank: 1,
+                    desa: 'Desa Pemulutan',
+                    kec: 'Kec. Pemulutan',
+                    jumlah: 45,
+                    total: 48
+                },
+                {
+                    rank: 2,
+                    desa: 'Desa Indralaya',
+                    kec: 'Kec. Indralaya',
+                    jumlah: 42,
+                    total: 45
+                },
+                {
+                    rank: 3,
+                    desa: 'Desa Muara Kuang',
+                    kec: 'Kec. Muara Kuang',
+                    jumlah: 38,
+                    total: 40
+                }
+            ];
+
+            const desaData = [
+                // Kec. Indralaya
+                {
+                    nama: 'Indralaya',
+                    kec: 'Indralaya',
+                    kades: 'H. Ahmad Syukri, S.H.',
+                    lat: -3.2500,
+                    lng: 104.6480,
+                    url: 'indralaya.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Timbangan',
+                    kec: 'Indralaya',
+                    kades: 'M. Ridwan, S.Sos.',
+                    lat: -3.2620,
+                    lng: 104.6580,
+                    url: 'timbangan.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Tanjung Seteko',
+                    kec: 'Indralaya',
+                    kades: 'Hj. Siti Aminah',
+                    lat: -3.2430,
+                    lng: 104.6380,
+                    url: 'tanjungseteko.oganilirkab.go.id'
+                },
+                // Kec. Indralaya Utara
+                {
+                    nama: 'Palem Raya',
+                    kec: 'Indralaya Utara',
+                    kades: 'Darmawan, S.Pd.',
+                    lat: -3.2180,
+                    lng: 104.6380,
+                    url: 'kembangogan.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Seri Kembang',
+                    kec: 'Indralaya Utara',
+                    kades: 'Zulkifli',
+                    lat: -3.2280,
+                    lng: 104.6480,
+                    url: 'serikembang.oganilirkab.go.id'
+                },
+                // Kec. Indralaya Selatan
+                {
+                    nama: 'Beti',
+                    kec: 'Indralaya Selatan',
+                    kades: 'M. Yasir, S.E.',
+                    lat: -3.2830,
+                    lng: 104.6580,
+                    url: 'beti.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Segayam',
+                    kec: 'Indralaya Selatan',
+                    kades: 'H. Iskandar',
+                    lat: -3.2980,
+                    lng: 104.6680,
+                    url: 'segayam.oganilirkab.go.id'
+                },
+                // Kec. Rantau Panjang
+                {
+                    nama: 'Rantau Panjang',
+                    kec: 'Rantau Panjang',
+                    kades: 'Suparman',
+                    lat: -3.1980,
+                    lng: 104.5780,
+                    url: 'rantaupanjang.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Sakatiga',
+                    kec: 'Rantau Panjang',
+                    kades: 'Erwin Saputra',
+                    lat: -3.2120,
+                    lng: 104.5880,
+                    url: 'sakatiga.oganilirkab.go.id'
+                },
+                // Kec. Pemulutan
+                {
+                    nama: 'Pemulutan',
+                    kec: 'Pemulutan',
+                    kades: 'H. M. Yani, S.Pd.',
+                    lat: -3.2980,
+                    lng: 104.7180,
+                    url: 'pemulutan.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Tanjung Baru',
+                    kec: 'Pemulutan',
+                    kades: 'Nurhasanah',
+                    lat: -3.3120,
+                    lng: 104.7280,
+                    url: 'tanjungbaru.oganilirkab.go.id'
+                },
+                // Kec. Sungai Pinang
+                {
+                    nama: 'Sungai Pinang',
+                    kec: 'Sungai Pinang',
+                    kades: 'M. Hidayat, S.H.',
+                    lat: -3.3480,
+                    lng: 104.5980,
+                    url: 'sungaipinang.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Talang Pangeran',
+                    kec: 'Sungai Pinang',
+                    kades: 'Hj. Ramlah',
+                    lat: -3.3580,
+                    lng: 104.6080,
+                    url: 'talangpangeran.oganilirkab.go.id'
+                },
+                // Kec. Tanjung Batu
+                {
+                    nama: 'Tanjung Batu',
+                    kec: 'Tanjung Batu',
+                    kades: 'H. Rusli, S.Sos.',
+                    lat: -3.1780,
+                    lng: 104.6980,
+                    url: 'tanjungbatu.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Seri Tanjung',
+                    kec: 'Tanjung Batu',
+                    kades: 'Abdul Karim',
+                    lat: -3.1880,
+                    lng: 104.7120,
+                    url: 'seritanjung.oganilirkab.go.id'
+                },
+                // Kec. Muara Kuang
+                {
+                    nama: 'Muara Kuang',
+                    kec: 'Muara Kuang',
+                    kades: 'H. Amir Hamzah',
+                    lat: -3.1480,
+                    lng: 104.6180,
+                    url: 'muarakuang.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Rantau Alai',
+                    kec: 'Muara Kuang',
+                    kades: 'Darmawi',
+                    lat: -3.1580,
+                    lng: 104.6320,
+                    url: 'rantaualai.oganilirkab.go.id'
+                },
+                // Kec. Kandis
+                {
+                    nama: 'Kandis',
+                    kec: 'Kandis',
+                    kades: 'M. Aripin',
+                    lat: -3.0980,
+                    lng: 104.5480,
+                    url: 'kandis.oganilirkab.go.id'
+                },
+                {
+                    nama: 'Tambang Rambang',
+                    kec: 'Kandis',
+                    kades: 'Syamsudin',
+                    lat: -3.1120,
+                    lng: 104.5580,
+                    url: 'tambangrambang.oganilirkab.go.id'
+                }
+            ];
+
+            // ===== NAVBAR SCROLL =====
+            const navbar = document.getElementById('navbar');
+            const updateNav = () => {
+                if (window.scrollY > 80) {
+                    navbar.classList.add('bg-white/90', 'backdrop-blur-xl', 'shadow-lg',
+                        'shadow-neutral-200/50');
+                    navbar.classList.remove('bg-transparent');
+                    document.querySelectorAll('.nav-text-color').forEach(el => {
+                        el.classList.remove('text-white');
+                        el.classList.add('text-neutral-900');
+                    });
+                    document.querySelectorAll('.nav-sub-color').forEach(el => {
+                        el.classList.remove('text-neutral-400');
+                        el.classList.add('text-neutral-500');
+                    });
+                    document.querySelectorAll('.nav-link-color').forEach(el => {
+                        el.classList.remove('text-neutral-300');
+                        el.classList.add('text-neutral-600');
+                    });
+                } else {
+                    navbar.classList.remove('bg-white/90', 'backdrop-blur-xl', 'shadow-lg',
+                        'shadow-neutral-200/50');
+                    navbar.classList.add('bg-transparent');
+                    document.querySelectorAll('.nav-text-color').forEach(el => {
+                        el.classList.add('text-white');
+                        el.classList.remove('text-neutral-900');
+                    });
+                    document.querySelectorAll('.nav-sub-color').forEach(el => {
+                        el.classList.add('text-neutral-400');
+                        el.classList.remove('text-neutral-500');
+                    });
+                    document.querySelectorAll('.nav-link-color').forEach(el => {
+                        el.classList.add('text-neutral-300');
+                        el.classList.remove('text-neutral-600');
+                    });
+                }
+            };
+            window.addEventListener('scroll', updateNav);
+            updateNav();
+
+            // ===== MOBILE MENU =====
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const menuIcon = document.getElementById('menuIcon');
+            let menuOpen = false;
+            mobileToggle.addEventListener('click', () => {
+                menuOpen = !menuOpen;
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.setAttribute('data-icon', menuOpen ? 'mdi:close' : 'mdi:menu');
+            });
+            document.querySelectorAll('.mobile-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuOpen = false;
+                    menuIcon.setAttribute('data-icon', 'mdi:menu');
+                });
+            });
+
+            // ===== COUNTER ANIMATION =====
+            const animateCounter = (el) => {
+                const target = parseInt(el.getAttribute('data-target'));
+                const duration = 2000;
+                const start = performance.now();
+                const step = (now) => {
+                    const elapsed = now - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.round(eased * target).toLocaleString('id-ID');
+                    if (progress < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            };
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.5
+            });
+            document.querySelectorAll('.counter').forEach(c => counterObserver.observe(c));
+
+            // ===== SCROLL REVEAL =====
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('active');
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+            // ===== RENDER NEWS =====
+            const newsGrid = document.getElementById('newsGrid');
+            const renderNews = (category = 'semua') => {
+                const filtered = category === 'semua' ? newsData : newsData.filter(n => n.category ===
+                    category);
+                newsGrid.innerHTML = filtered.map((news, i) => `
+                <article class="card-hover bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm group" style="animation: fadeInUp 0.6s ease-out ${i * 0.1}s forwards; opacity: 0;">
+                    <div class="news-img-wrap h-48 relative">
+                        <img src="${news.img}" alt="${news.title}" class="w-full h-full object-cover" loading="lazy">
+                        <div class="absolute top-3 left-3">
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-brand-600">${news.category}</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center gap-2 text-xs text-neutral-400 mb-2">
+                            <span class="iconify" data-icon="mdi:calendar-outline"></span>
+                            <span>${news.date}</span>
+                            <span class="w-1 h-1 rounded-full bg-neutral-300"></span>
+                            <span>${news.desa}</span>
+                        </div>
+                        <h3 class="font-bold text-sm leading-snug text-neutral-900 group-hover:text-brand-600 transition-colors line-clamp-2">${news.title}</h3>
+                        <p class="text-xs text-neutral-500 mt-2 leading-relaxed line-clamp-2">${news.excerpt}</p>
+                        <button class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-500 hover:text-brand-700 transition-colors group/btn">
+                            Baca selengkapnya
+                            <span class="iconify group-hover/btn:translate-x-1 transition-transform" data-icon="mdi:arrow-right"></span>
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+            };
+            renderNews();
+
+            document.querySelectorAll('#newsTabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#newsTabs .tab-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.classList.add('text-neutral-600');
+                    });
+                    btn.classList.add('active');
+                    btn.classList.remove('text-neutral-600');
+                    renderNews(btn.dataset.category);
+                });
+            });
+
+            // ===== RENDER RANKINGS =====
+            const renderRanking = (container, data, type) => {
+                const el = document.getElementById(container);
+                const maxVal = Math.max(...data.map(d => d.jumlah));
+                el.innerHTML = data.map(item => {
+                    const pct = (item.jumlah / maxVal * 100).toFixed(0);
+                    const isBlue = type === 'surat';
+                    const barClass = isBlue ? 'bg-gradient-to-r from-sky-400 to-sky-500' :
+                        'bg-gradient-to-r from-mint-400 to-mint-500';
+                    const badgeClass = isBlue ?
+                        'bg-gradient-to-br from-sky-400 to-sky-600 shadow-sky-500/25' :
+                        'bg-gradient-to-br from-mint-400 to-mint-600 shadow-mint-500/25';
+                    const textClass = isBlue ? 'text-sky-600' : 'text-mint-600';
+                    return `
+                    <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-5 border border-white/80">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 rounded-lg ${badgeClass} text-white flex items-center justify-center text-sm font-bold shadow-md">${item.rank}</div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-sm text-neutral-900 truncate">${item.desa}</p>
+                                <p class="text-xs text-neutral-400">${item.kec}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xl font-bold ${textClass}">${item.jumlah.toLocaleString('id-ID')}</p>
+                                <p class="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">${type === 'surat' ? 'Surat TTE' : 'Hadir'}</p>
+                            </div>
+                        </div>
+                        <div class="w-full h-2.5 bg-white rounded-full overflow-hidden shadow-inner">
+                            <div class="${barClass} h-full rounded-full transition-all duration-1000 ease-out" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            };
+            renderRanking('suratRanking', topSurat, 'surat');
+            renderRanking('absensiRanking', topAbsensi, 'absensi');
+
+            // ===== MAP =====
+            const kecamatanList = [...new Set(desaData.map(d => d.kec))].sort();
+            const kecFilterEl = document.getElementById('kecFilter');
+            kecamatanList.forEach(kec => {
+                const btn = document.createElement('button');
+                btn.className =
+                    'kec-chip text-xs font-semibold px-4 py-2 rounded-full border border-neutral-200 bg-white text-neutral-600';
+                btn.dataset.kec = kec;
+                btn.textContent = kec;
+                kecFilterEl.appendChild(btn);
+            });
+
+            const map = L.map('map', {
+                scrollWheelZoom: false,
+                zoomControl: true
+            }).setView([-3.23, 104.63], 11);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            const markers = {};
+            const markerGroups = {};
+
+            desaData.forEach(desa => {
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div class="custom-marker" data-kec="${desa.kec}"></div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
+                const popupContent = `
+                <div style="padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <div style="width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, #ec4899, #db2777); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="color: white; font-size: 16px;">🏘️</span>
+                        </div>
+                        <div>
+                            <p style="font-weight: 700; font-size: 14px; color: #171717; margin: 0;">Desa ${desa.nama}</p>
+                            <p style="font-size: 11px; color: #737373; margin: 0;">${desa.kec}</p>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #fdf2f8, #f0f9ff); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #525252; line-height: 1.8;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span>👤</span> <strong>Kades:</strong> ${desa.kades}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span>🌐</span> <strong>Web:</strong> <span style="color: #ec4899; font-size: 11px;">${desa.url}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+                const marker = L.marker([desa.lat, desa.lng], {
+                    icon
+                }).bindPopup(popupContent, {
+                    closeButton: true,
+                    maxWidth: 280
+                }).addTo(map);
+                marker.desaData = desa;
+                markers[desa.nama] = marker;
+                if (!markerGroups[desa.kec]) markerGroups[desa.kec] = [];
+                markerGroups[desa.kec].push(marker);
+            });
+
+            kecFilterEl.addEventListener('click', (e) => {
+                const chip = e.target.closest('.kec-chip');
+                if (!chip) return;
+                kecFilterEl.querySelectorAll('.kec-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                const activeKec = chip.dataset.kec;
+                Object.values(markers).forEach(m => {
+                    const el = m.getElement();
+                    if (!el) return;
+                    const dot = el.querySelector('.custom-marker');
+                    if (activeKec === 'semua' || m.desaData.kec === activeKec) {
+                        dot.classList.remove('inactive');
+                    } else {
+                        dot.classList.add('inactive');
+                    }
+                });
+                if (activeKec === 'semua') {
+                    map.setView([-3.23, 104.63], 11);
+                } else {
+                    const group = markerGroups[activeKec];
+                    if (group && group.length) {
+                        const bounds = L.latLngBounds(group.map(m => m.getLatLng()));
+                        map.fitBounds(bounds, {
+                            padding: [50, 50],
+                            maxZoom: 13
+                        });
+                    }
+                }
+            });
+
+            // ===== WEBSITE DESA =====
+            const websiteGrid = document.getElementById('websiteGrid');
+            const noResult = document.getElementById('noResult');
+            const searchInput = document.getElementById('websiteSearch');
+
+            const renderWebsites = (query = '') => {
+                const q = query.toLowerCase();
+                const filtered = desaData.filter(d =>
+                    d.nama.toLowerCase().includes(q) || d.kec.toLowerCase().includes(q) || d.kades
+                    .toLowerCase().includes(q)
+                );
+                if (filtered.length === 0) {
+                    websiteGrid.innerHTML = '';
+                    noResult.classList.remove('hidden');
+                    return;
+                }
+                noResult.classList.add('hidden');
+                websiteGrid.innerHTML = filtered.map((desa, i) => `
+                <div class="card-hover status-online bg-white rounded-2xl border border-neutral-100 p-5 shadow-sm group" style="animation: fadeInUp 0.5s ease-out ${i * 0.04}s forwards; opacity: 0;">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-50 to-sky-50 group-hover:from-brand-100 group-hover:to-sky-100 flex items-center justify-center transition-colors">
+                            <span class="iconify text-brand-400 group-hover:text-brand-500 transition-colors text-lg" data-icon="mdi:web"></span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-sm truncate">Desa ${desa.nama}</p>
+                            <p class="text-xs text-neutral-400">${desa.kec}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 mb-4 text-xs text-neutral-500">
+                        <div class="flex items-center gap-2">
+                            <span class="iconify text-neutral-300" data-icon="mdi:account-outline"></span>
+                            <span class="truncate">${desa.kades}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="iconify text-neutral-300" data-icon="mdi:link-variant"></span>
+                            <span class="text-brand-500 font-medium truncate">${desa.url}</span>
+                        </div>
+                    </div>
+                    <a href="https://${desa.url}" target="_blank" rel="noopener"
+                       class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-brand-50 to-sky-50 hover:from-brand-500 hover:to-brand-600 text-xs font-semibold text-brand-600 hover:text-white border border-brand-100 hover:border-brand-500 transition-all duration-300">
+                        <span class="iconify" data-icon="mdi:open-in-new"></span>
+                        Kunjungi Website
+                    </a>
+                </div>
+            `).join('');
+            };
+            renderWebsites();
+            searchInput.addEventListener('input', (e) => renderWebsites(e.target.value));
+
+            // ===== SMOOTH SCROLL =====
+            document.querySelectorAll('a[href^="#"]').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    const target = document.querySelector(a.getAttribute('href'));
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            setTimeout(() => map.invalidateSize(), 500);
+        });
+    </script>
+</body>
+
+</html>
