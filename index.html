@@ -540,7 +540,7 @@
     <!-- ========== STATS OVERVIEW ========== -->
     <section class="relative z-20 -mt-12 lg:-mt-12">
         <div class="max-w-7xl mx-auto px-6 lg:px-12">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div
                     class="reveal bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/70 shadow-xl shadow-neutral-900/10 stat-shimmer">
                     <div class="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center mb-3">
@@ -565,14 +565,14 @@
                     <p class="text-3xl font-bold text-neutral-900 counter" data-target="324">0</p>
                     <p class="text-sm text-neutral-500 mt-1">Absensi Hari Ini</p>
                 </div>
-                <div
+                <!-- <div
                     class="reveal delay-300 bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-white/70 shadow-xl shadow-neutral-900/10">
                     <div class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center mb-3">
                         <span class="iconify text-purple-500 text-2xl" data-icon="mdi:web"></span>
                     </div>
                     <p class="text-3xl font-bold text-neutral-900 counter" data-target="18">0</p>
                     <p class="text-sm text-neutral-500 mt-1">Website Desa Aktif</p>
-                </div>
+                </div> -->
             </div>
         </div>
     </section>
@@ -1214,9 +1214,6 @@
                                 <p class="text-xl font-bold ${textClass}">${item.jumlah.toLocaleString('id-ID')}</p>
                                 <p class="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">${type === 'surat' ? 'Surat TTE' : 'Hadir'}</p>
                             </div>
-                        </div>
-                        <div class="w-full h-2.5 bg-white rounded-full overflow-hidden shadow-inner">
-                            <div class="${barClass} h-full rounded-full transition-all duration-1000 ease-out" style="width: ${pct}%"></div>
                         </div>
                     </div>
                 `;
